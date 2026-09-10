@@ -5,8 +5,8 @@ class Guitar(BaseModel):
     id:int
     brand:str
     name:str
-    finish:str 
-    price:float 
+    finish:str
+    price:float
 
     # @field_validator("price")
     # @classmethod
@@ -26,7 +26,8 @@ guitars=[
      Guitar(id=4, brand="Jackson", name="Rhoads JS32T", price=469.99, finish="White with Black Bevels"),
      Guitar(id=5, brand="Fender", name="Player II Stratocaster HSS", price=999.99, finish="Transparent Cherry Burst with Rosewood Fingerboard"),
      Guitar(id=6, brand="PRS", name="SE Studio", finish="Charcoal Cherry Burst", price=1099.00)
-]    
+]
+
 
 # localhost:8000/guitars
 @app.get('/')
