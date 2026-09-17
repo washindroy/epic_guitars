@@ -16,7 +16,3 @@ In this small task i implemented fastapi in python to build a "guitar inventory"
 * put/guitars/guitar_id: updates an already existing guitar in the list.
 * get/gutiars/guitar_id: retrieves a guitar based on its id
 * delete/guitars/guitar_id: deletes a guitar in the list
-
-
-
-

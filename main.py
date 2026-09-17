@@ -1,5 +1,44 @@
 from fastapi import FastAPI, HTTPException, Response
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel
+import psycopg2
+
+con=psycopg2.connect(
+    dbname="postgres",
+    user="postgres",
+    password='0000',
+    host='localhost',
+    port='5432'
+)
+
+cur=con.cursor()
+
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS guitars(
+        id SERIAL PRIMARY KEY,
+        brand VARCHAR,
+        name VARCHAR,
+        price NUMERIC,
+        finish VARCHAR
+    )
+""")
+
+cur.executemany("""
+    INSERT INTO guitars(id, brand, name, price, finish)
+    VALUES (%s, %s, %s, %s, %s)
+    ON CONFLICT (id) DO NOTHING
+""", [(1 ,'Gibson' ,'70s Flying V' ,2499.00 ,'Classic White' ),
+(2 ,'ESP' ,'SnakeByte' ,1499.00 ,'Snow White' ),
+(3 ,'Shecter' ,'Synyster Gates Custom-S' ,1599.00 ,'Gloss Black with Silver Stripes' ),
+(4 ,'Jackson' ,'Rhoads JS32T' ,469.99 ,'White with Black Bevels' ),
+(5 ,'Fender' ,'Player II Stratocaster HSS' ,999.99 ,'Transparent Cherry Burst with Rosewood Fingerboard' ),
+(6 ,'PRS','SE Studio',1099.00 ,'Charcoal Cherry Burst'),
+(7,'Fender', 'American Professional II jazzmaster', 1739.99, 'Dark Night with Rosewood Fingerboard'),
+(8, 'Epiphone', 'SG Custom Electric Guitar', 699.00, 'Alpine White'),
+(9,'Ibanez', 'Prestige RG652AHM', 1799.99, 'Antique White'),
+(10,'ESP', 'Kirk Hammett Signature White Zombie', 1619.10, 'Black with Graphic')])
+
+
+
 
 class Guitar(BaseModel):
     id:int
@@ -8,26 +47,10 @@ class Guitar(BaseModel):
     finish:str
     price:float
 
-    # @field_validator("price")
-    # @classmethod
-    # def validate_price(cls, value: float):
-    #     if value <=0:
-    #         raise ValueError('batata price is higher than 0.')
-    #     return value
-
-
-
 
 app = FastAPI()
-guitars=[
-     Guitar(id=1, brand="Gibson", name="70s Flying V", price=2499.00, finish="Classic White"),
-     Guitar(id=2, brand="ESP", name="Snakebyte", finish="Snow White", price=1499.00),
-     Guitar(id=3, brand="Shecter", name="Synyster Gates Custom-S", finish="Gloss Black with Silver Stripes", price=1599.00),
-     Guitar(id=4, brand="Jackson", name="Rhoads JS32T", price=469.99, finish="White with Black Bevels"),
-     Guitar(id=5, brand="Fender", name="Player II Stratocaster HSS", price=999.99, finish="Transparent Cherry Burst with Rosewood Fingerboard"),
-     Guitar(id=6, brand="PRS", name="SE Studio", finish="Charcoal Cherry Burst", price=1099.00)
-]
-
+cur.execute("SELECT id, brand, name, finish, price FROM guitars ORDER BY id")
+guitars = [Guitar(id=row[0], brand=row[1], name=row[2], finish=row[3], price=row[4]) for row in cur.fetchall()]
 
 # localhost:8000/guitars
 @app.get('/')
@@ -60,15 +83,6 @@ def update_guitar(guitar_id: int, guitar: Guitar):
     )
 
 
-
-
-# @app.put("/guitars")
-# def update_list(guitar:Guitar):
-#      update=guitar.model_dump()
-#      guitars=update
-#      return {"updated"}
-     
-
 @app.delete('/guitars')
 def delete(gutiar_id: int):
     deleted = guitars.pop(gutiar_id-1)
@@ -82,15 +96,13 @@ def get_guitar(guitar_id: int):
     else:
             raise HTTPException(status_code=404, detail=f"guitar {guitar_id} not found")
         
+con.commit()
+cur.close()
+con.close()
+       
         
-        
 
 
 
-    # if 0 <=guitar_id < len(guitars):
-    #     return guitars[guitar_id]
-    # else:
-    #     raise HTTPException(status_code=404, detail=f"guitar {guitar_id} not found")
 
-    #for guitar in guitars:
-    #     if guitar["id"]==guitar_id:
+
