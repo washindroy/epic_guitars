@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from guitar_schemas import Guitar, InsertGuitar
+from guitar_schemas import InsertGuitar
 from guitars_repository import guitar_repository
 
 guitars_router = APIRouter(prefix="/guitars")
@@ -19,9 +19,9 @@ def create(new_guitar: InsertGuitar):
 
 
 @guitars_router.put("/{guitar_id}")
-def update_guitar(guitar_id: int, guitar: Guitar):
+def update_guitar(guitar_id: int, guitar: InsertGuitar):
     updated_guitar = guitar_repository.update_guitar(guitar_id, guitar)
-    return JSONResponse({"guitar": updated_guitar})
+    return {"guitar": updated_guitar}
  
 
 @guitars_router.delete('/')
@@ -33,4 +33,4 @@ def delete(guitar_id: int):
 @guitars_router.get("/{guitar_id}")
 def get_guitar(guitar_id: int):
     guitar = guitar_repository.get_guitar_details(guitar_id=guitar_id)
-    return JSONResponse({"guitar": guitar})
+    return {"guitar": guitar}
